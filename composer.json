@@ -1,0 +1,21 @@
+{
+    "name": "vlaim/pio-check",
+    "type": "project",
+    "require": {
+        "guzzlehttp/guzzle": "^7.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "vlaim\\PioCheck\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Vladislav Alexeyev",
+            "email": "vlad@alexeyev.me"
+        }
+    ],
+    "require-dev": {
+        "vimeo/psalm": "^4.15"
+    }
+}
