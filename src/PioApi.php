@@ -25,6 +25,8 @@ class PioApi
 
     private bool $forceObtainToken = false;
 
+    private const TTL_LOGIN_TOKEN = 60 * 60;
+
     public function __construct(
         protected string $login,
         protected string $password,
@@ -94,7 +96,7 @@ class PioApi
             $token = (string)$data->token;
             $this
                 ->getCacheAdapter()
-                ->set($this->login, $token, 60 * 60);
+                ->set($this->login, $token, self::TTL_LOGIN_TOKEN);
 
             return $token;
         }

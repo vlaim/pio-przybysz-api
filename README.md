@@ -13,7 +13,7 @@ Use composer to install this package.
 ```
 {
     "require": {
-        "pio-przybysz-api": "*"
+        "vlaim/pio-przybysz-api": "*"
     }
 }
 ```
