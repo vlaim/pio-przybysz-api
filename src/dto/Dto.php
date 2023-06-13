@@ -13,7 +13,10 @@ class Dto
     public function __construct(\stdClass $data)
     {
         foreach ($data as $key => $value) {
-            $this->$key = $value;
+            if(property_exists($this, $key)){
+                $this->$key = $value;
+            }
+
         }
     }
 
