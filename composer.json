@@ -1,8 +1,8 @@
 {
-    "name": "vlaim/pio-check",
-    "type": "project",
+    "name": "vlaim/pio-przybysz-api",
+    "type": "library",
     "require": {
-        "guzzlehttp/guzzle": "^7.3",
+        "guzzlehttp/guzzle": "^7.7",
         "phpfastcache/phpfastcache": "^9.1"
     },
     "autoload": {

@@ -1,4 +1,4 @@
-.idea/
 index.php
 vendor
 cache/*
+composer.lock
