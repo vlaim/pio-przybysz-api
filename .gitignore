@@ -1,4 +1,4 @@
 .idea/
 index.php
-.token*
 vendor
+cache/*

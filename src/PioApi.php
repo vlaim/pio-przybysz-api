@@ -6,17 +6,22 @@ declare(strict_types=1);
 namespace vlaim\PioCheck;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
+use Phpfastcache\Drivers\Files\Config;
+use Phpfastcache\Exceptions\PhpfastcacheSimpleCacheException;
+use Phpfastcache\Helper\Psr16Adapter;
 use stdClass;
 use vlaim\PioCheck\dto\Application;
 
 class PioApi
 {
-    protected const API_URL = 'https://api-przybysz.duw.pl/';
-    protected const TOKEN_CACHE_PATH = __DIR__.'/../.token';
+    protected string $apiUrl = 'https://api-przybysz.duw.pl/';
 
     protected Client $client;
+
+    protected ?Psr16Adapter $adapter = null;
 
     private bool $forceObtainToken = false;
 
@@ -26,17 +31,46 @@ class PioApi
     )
     {
         $this->client = new Client([
-            'base_uri' => self::API_URL,
+            'base_uri' => $this->apiUrl,
             'verify' => false,
         ]);
     }
 
-    private function getCachePath(): string
+    public function setCacheAdapter(Psr16Adapter $adapter): self
     {
-        return self::TOKEN_CACHE_PATH.'_'.$this->login;
+        $this->adapter = $adapter;
+
+        return $this;
     }
 
 
+    public function getCacheAdapter(): Psr16Adapter
+    {
+        try {
+            if ($this->adapter === null) {
+                return new Psr16Adapter('Files', new Config([
+                    'path' => __DIR__ . '/../cache',
+                ]));
+            }
+        } catch (\Throwable $exception) {
+            throw new \RuntimeException('Failed to init cache adapter');
+        }
+
+        return $this->adapter;
+    }
+
+    public function setApiUrl(string $apiUrl): self
+    {
+        $this->apiUrl = $apiUrl;
+
+        return $this;
+    }
+
+
+    /**
+     * @throws PhpfastcacheSimpleCacheException
+     * @throws GuzzleException
+     */
     protected function obtainToken(): string
     {
         $response = $this->client->post('/api/v1/token/obtain', [
@@ -50,29 +84,37 @@ class PioApi
             ]
         ]);
 
-        /** @var stdClass */
-        $data = json_decode($response->getBody()->getContents());
+        /** @var stdClass $data */
+        $data = json_decode($response
+            ->getBody()
+            ->getContents()
+        );
 
-        if(!empty($data->token)){
-            $token = (string) $data->token;
-            file_put_contents($this->getCachePath(), $token);
+        if (!empty($data->token)) {
+            $token = (string)$data->token;
+            $this
+                ->getCacheAdapter()
+                ->set($this->login, $token, 60 * 60);
+
             return $token;
         }
 
         throw new \RuntimeException('An error occurred while obtaining a new token');
-
-
     }
 
-
+    /**
+     * @throws PhpfastcacheSimpleCacheException
+     * @throws GuzzleException
+     */
     public function getToken(): string
     {
         if ($this->forceObtainToken) {
             $this->obtainToken();
         }
-        return (string) @file_get_contents($this->getCachePath());
+        return (string)$this
+            ->getCacheAdapter()
+            ->get($this->login);
     }
-
 
 
     public function getCommuniques(int $id): array
@@ -130,8 +172,6 @@ class PioApi
         }
 
     }
-
-
 
 
 }
