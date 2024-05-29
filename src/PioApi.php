@@ -15,6 +15,7 @@ use Phpfastcache\Helper\Psr16Adapter;
 use Psr\SimpleCache\CacheInterface;
 use stdClass;
 use vlaim\PioCheck\dto\Application;
+use vlaim\PioCheck\dto\Communique;
 
 class PioApi
 {
@@ -120,8 +121,15 @@ class PioApi
     }
 
 
+    /**
+     * @param int $id
+     * @return Communique[]
+     * @throws GuzzleException
+     * @throws PhpfastcacheSimpleCacheException
+     */
     public function getCommuniques(int $id): array
     {
+        $result = [];
         $token = $this->getToken();
 
         try {
@@ -134,7 +142,13 @@ class PioApi
             /** @var stdClass */
             $responseData = json_decode($response->getBody()->__toString());
             /** @var array */
-            $result = $responseData->{'hydra:member'} ?? [];
+            $members = $responseData->{'hydra:member'} ?? [];
+
+            /** @var stdClass $member */
+            foreach ($members as $member) {
+                $result[] = new Communique($member);
+            }
+
             return $result;
         } catch (RequestException $exception) {
             if ($exception->getCode() === 401) {

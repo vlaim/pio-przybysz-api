@@ -10,7 +10,7 @@ namespace vlaim\PioCheck\dto;
  */
 class Dto
 {
-    public function __construct(\stdClass $data)
+    public function __construct(object $data)
     {
         foreach ($data as $key => $value) {
             if(property_exists($this, (string) $key)){
