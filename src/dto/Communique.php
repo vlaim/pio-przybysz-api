@@ -10,7 +10,7 @@ class Communique extends Dto
     public int $id;
     protected string $application;
     protected string $title;
-    protected string $content;
+    protected ?string $content;
     protected bool $decision;
     protected string $sentAt;
 
@@ -29,7 +29,7 @@ class Communique extends Dto
         return $this->title;
     }
 
-    public function getContent(): string
+    public function getContent(): ?string
     {
         return $this->content;
     }
