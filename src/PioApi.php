@@ -12,8 +12,10 @@ use GuzzleHttp\RequestOptions;
 use Phpfastcache\Drivers\Files\Config;
 use Phpfastcache\Exceptions\PhpfastcacheSimpleCacheException;
 use Phpfastcache\Helper\Psr16Adapter;
+use Psr\SimpleCache\CacheInterface;
 use stdClass;
 use vlaim\PioCheck\dto\Application;
+use vlaim\PioCheck\dto\Communique;
 
 class PioApi
 {
@@ -21,7 +23,7 @@ class PioApi
 
     protected Client $client;
 
-    protected ?Psr16Adapter $adapter = null;
+    protected ?CacheInterface $adapter = null;
 
     private bool $forceObtainToken = false;
 
@@ -38,7 +40,7 @@ class PioApi
         ]);
     }
 
-    public function setCacheAdapter(Psr16Adapter $adapter): self
+    public function setCacheAdapter(CacheInterface $adapter): self
     {
         $this->adapter = $adapter;
 
@@ -46,7 +48,7 @@ class PioApi
     }
 
 
-    public function getCacheAdapter(): Psr16Adapter
+    public function getCacheAdapter(): CacheInterface
     {
         try {
             if ($this->adapter === null) {
@@ -119,8 +121,15 @@ class PioApi
     }
 
 
+    /**
+     * @param int $id
+     * @return Communique[]
+     * @throws GuzzleException
+     * @throws PhpfastcacheSimpleCacheException
+     */
     public function getCommuniques(int $id): array
     {
+        $result = [];
         $token = $this->getToken();
 
         try {
@@ -133,7 +142,13 @@ class PioApi
             /** @var stdClass */
             $responseData = json_decode($response->getBody()->__toString());
             /** @var array */
-            $result = $responseData->{'hydra:member'} ?? [];
+            $members = $responseData->{'hydra:member'} ?? [];
+
+            /** @var stdClass $member */
+            foreach ($members as $member) {
+                $result[] = new Communique($member);
+            }
+
             return $result;
         } catch (RequestException $exception) {
             if ($exception->getCode() === 401) {
