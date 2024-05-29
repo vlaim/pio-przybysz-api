@@ -12,6 +12,7 @@ use GuzzleHttp\RequestOptions;
 use Phpfastcache\Drivers\Files\Config;
 use Phpfastcache\Exceptions\PhpfastcacheSimpleCacheException;
 use Phpfastcache\Helper\Psr16Adapter;
+use Psr\SimpleCache\CacheInterface;
 use stdClass;
 use vlaim\PioCheck\dto\Application;
 
@@ -21,7 +22,7 @@ class PioApi
 
     protected Client $client;
 
-    protected ?Psr16Adapter $adapter = null;
+    protected ?CacheInterface $adapter = null;
 
     private bool $forceObtainToken = false;
 
@@ -38,7 +39,7 @@ class PioApi
         ]);
     }
 
-    public function setCacheAdapter(Psr16Adapter $adapter): self
+    public function setCacheAdapter(CacheInterface $adapter): self
     {
         $this->adapter = $adapter;
 
@@ -46,7 +47,7 @@ class PioApi
     }
 
 
-    public function getCacheAdapter(): Psr16Adapter
+    public function getCacheAdapter(): CacheInterface
     {
         try {
             if ($this->adapter === null) {
